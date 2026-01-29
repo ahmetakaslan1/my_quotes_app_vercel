@@ -38,6 +38,10 @@ export default function Navbar() {
                 </Link>
 
                 <div className="nav-actions">
+                    <Link href="/api-docs" className="btn btn-ghost" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}>
+                        📄 API
+                    </Link>
+
                     <button
                         onClick={toggleTheme}
                         className="btn-icon"
