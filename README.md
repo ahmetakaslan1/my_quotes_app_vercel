@@ -3,7 +3,7 @@
 Kişisel notlarınızı ve ilham verici sözlerinizi yönetebileceğiniz modern bir web uygulaması.
 # Vercel 
 <img
-  src="https://logo.svgcdn.com/logos/vercel-icon.png"
+  src="https://logo.svgcdn.com/logos/vercel-icon.svg"
   alt="Vercel"
   width="20"
   height="20"
