@@ -1,7 +1,8 @@
 # 📝 Quote Management App
 
 Kişisel notlarınızı ve ilham verici sözlerinizi yönetebileceğiniz modern bir web uygulaması.
-# Vercel <img
+# Vercel 
+<img
   src="https://logo.svgcdn.com/logos/vercel-icon.png"
   alt="Vercel"
   width="20"
