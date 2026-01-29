@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📝 Quote Management App
 
-## Getting Started
+Kişisel notlarınızı ve ilham verici sözlerinizi yönetebileceğiniz modern bir web uygulaması.
 
-First, run the development server:
+## 🎯 Özellikler
+
+- ✍️ **CRUD İşlemleri**: Not oluşturma, listeleme, güncelleme ve silme
+- 🔍 **Arama & Filtreleme**: İçerik veya yazara göre arama, favorilere göre filtreleme
+- 📊 **Sıralama**: En yeni, en eski veya alfabetik sıralama
+- ⭐ **Favori Sistemi**: Önemli notları favorilere ekleme
+- 🗑️ **Toplu Silme**: Birden fazla notu tek seferde silme
+- 🌓 **Tema Desteği**: Açık/Koyu mod geçişi
+- 📱 **Responsive Tasarım**: Mobil ve masaüstü uyumlu
+- 📄 **API Dokümantasyonu**: Swagger UI ile interaktif API dökümanları
+
+## 🛠️ Teknolojiler
+
+- **Framework**: Next.js 16 (App Router)
+- **Dil**: TypeScript
+- **Veritabanı**: MySQL (Prisma ORM)
+- **Styling**: Vanilla CSS (CSS Variables ile tema desteği)
+- **İkonlar**: Lucide React
+- **API Docs**: Swagger UI
+
+## 🚀 Kurulum
+
+### 1. Projeyi Klonlayın
+
+```bash
+git clone <repo-url>
+cd my_quotes_app
+```
+
+### 2. Bağımlılıkları Yükleyin
+
+```bash
+npm install
+```
+
+### 3. Environment Variables
+
+`.env` dosyasını oluşturun ve veritabanı bağlantı bilgilerinizi ekleyin:
+
+```env
+DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
+```
+
+### 4. Prisma Client Oluşturun
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+### 5. Geliştirme Sunucusunu Başlatın
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uygulama `http://localhost:3000` adresinde çalışacaktır.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📡 API Endpoints
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Quotes
 
-## Learn More
+- `GET /api/quotes` - Tüm notları listele (query: search, sort)
+- `POST /api/quotes` - Yeni not oluştur
+- `GET /api/quotes/[id]` - Tek bir notu getir
+- `PUT /api/quotes/[id]` - Notu güncelle
+- `DELETE /api/quotes/[id]` - Notu sil
+- `DELETE /api/quotes` - Toplu silme (body: { ids: number[] })
 
-To learn more about Next.js, take a look at the following resources:
+**API Dokümantasyonu**: `/api-docs` sayfasından Swagger UI ile tüm endpoint'leri test edebilirsiniz.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🌐 Vercel'e Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. GitHub'a push edin
+2. Vercel'de projeyi import edin
+3. Environment Variables ekleyin:
+   - `DATABASE_URL`: MySQL bağlantı string'i
+4. Deploy edin
 
-## Deploy on Vercel
+## 📝 Lisans
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Bu proje kişisel kullanım için oluşturulmuştur.
