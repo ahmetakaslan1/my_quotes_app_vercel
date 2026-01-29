@@ -60,16 +60,9 @@ npm run dev
 
 Uygulama `http://localhost:3000` adresinde çalışacaktır.
 
-## 📡 API Endpoints
+## 📡 API Dokümantasyonu
 
-### Quotes
-
-- `GET /api/quotes` - Tüm notları listele (query: search, sort)
-- `POST /api/quotes` - Yeni not oluştur
-- `GET /api/quotes/[id]` - Tek bir notu getir
-- `PUT /api/quotes/[id]` - Notu güncelle
-- `DELETE /api/quotes/[id]` - Notu sil
-- `DELETE /api/quotes` - Toplu silme (body: { ids: number[] })
+Uygulamanın API endpoint'leri ve kullanım detayları için `/api-docs` sayfasındaki Swagger dokümantasyonunu inceleyebilirsiniz.
 
 **API Dokümantasyonu**: `/api-docs` sayfasından Swagger UI ile tüm endpoint'leri test edebilirsiniz.
 
@@ -80,6 +73,8 @@ Uygulama `http://localhost:3000` adresinde çalışacaktır.
 3. Environment Variables ekleyin:
    - `DATABASE_URL`: MySQL bağlantı string'i
 4. Deploy edin
+
+supabase veya daha farklı bir alternatif veritabanı kullanabilirsiniz.
 
 ## 📝 Lisans
 
