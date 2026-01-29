@@ -1,13 +1,7 @@
 # 📝 Quote Management App
 
 Kişisel notlarınızı ve ilham verici sözlerinizi yönetebileceğiniz modern bir web uygulaması.
-# Vercel 
-                                      <svg
-                                    width="76"
-                                   height="65"
-                              viewBox="0 0 76 65"
-                  fill="none" xmlns="http://www.w3.org/2000/svg"><path
-            d="M37.5274 0L75.0548 65H0L37.5274 0Z" fill="#ffffff"/></svg>
+# Vercel ![Icon](https://upload.wikimedia.org/wikipedia/commons/6/6b/Bitmap_Vercel_logo.svg)
 ## 🎯 Özellikler
 
 - ✍️ **CRUD İşlemleri**: Not oluşturma, listeleme, güncelleme ve silme
