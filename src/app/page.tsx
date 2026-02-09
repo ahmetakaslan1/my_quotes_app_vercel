@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import QuoteCard from '@/components/QuoteCard';
+import NetworkStatus from '@/components/NetworkStatus';
 import { Search, Filter, CheckSquare, Trash, X, Menu } from 'lucide-react';
 import {
   getAllQuotesOffline,
@@ -180,9 +181,12 @@ export default function Home() {
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <div className="container">
           <div className="page-header">
-            <div className="page-title-section">
-              <h1>Kütüphanem</h1>
-              <p>Kaydettiğin tüm ilham verici sözler ve notlar burada.</p>
+            <div className="page-title-section" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div>
+                <h1>Kütüphanem</h1>
+                <p>Kaydettiğin tüm ilham verici sözler ve notlar burada.</p>
+              </div>
+              <NetworkStatus />
             </div>
 
             <div>
