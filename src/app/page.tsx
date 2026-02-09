@@ -4,19 +4,18 @@ import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import QuoteCard from '@/components/QuoteCard';
+import OfflineBanner from '@/components/OfflineBanner'; // Offline banner
+import SyncStatus from '@/components/SyncStatus'; // Sync status
 import { Search, Filter, CheckSquare, Trash, X, Menu } from 'lucide-react';
-
-interface Quote {
-  id: number;
-  content: string;
-  author: string | null;
-  category: string | null;
-  isFavorite: boolean;
-  createdAt: string;
-}
+import {
+  getAllQuotesOffline,
+  toggleFavoriteOffline,
+  deleteQuoteOffline
+} from '@/lib/offline-service'; // Offline service
+import { LocalQuote } from '@/lib/db';
 
 export default function Home() {
-  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [quotes, setQuotes] = useState<LocalQuote[]>([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'favorites'>('all');
   const [sort, setSort] = useState<'newest' | 'oldest' | 'alphabetical'>('newest');
@@ -33,51 +32,50 @@ export default function Home() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
+  // Offline-first: IndexedDB + Network
   const fetchQuotes = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ search, sort });
-
-      // Add category filter if not 'all'
-      if (selectedCategory !== 'all' && selectedCategory !== 'favorites') {
-        params.append('category', selectedCategory);
-      }
-
-      const res = await fetch(`/api/quotes?${params}`);
-      const data = await res.json();
-      setQuotes(data);
+      const allQuotes = await getAllQuotesOffline();
+      setQuotes(allQuotes);
     } catch (error) {
-      console.error('Notlar yüklenirken hata oluştu', error);
+      console.error('Quote yükleme hatası:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchQuotes();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search, sort, selectedCategory]);
+    fetchQuotes();
 
+    // Online olunca refresh et (sync için)
+    const handleOnline = () => fetchQuotes();
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, []);
+
+  // Offline-first favorite toggle
   const toggleFavorite = async (id: number, currentStatus: boolean) => {
+    // Optimistic UI update
     setQuotes(quotes.map(q => q.id === id ? { ...q, isFavorite: !currentStatus } : q));
+
     try {
-      await fetch(`/api/quotes/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isFavorite: !currentStatus }),
-      });
+      await toggleFavoriteOffline(id, false); // local ID
     } catch (error) {
-      console.error('Favori güncellenemedi', error);
-      fetchQuotes();
+      console.error('Favori güncelleme hatası:', error);
+      fetchQuotes(); // Hata varsa geri yükle
     }
   };
 
+  // Offline-first delete
   const deleteQuote = async (id: number) => {
-    if (!confirm('Bu notu silmek istediğinize emin misiniz?')) return;
+    if (!confirm('Bu sözü silmek istediğinize emin misiniz?')) return;
+
+    // Optimistic UI update
     setQuotes(quotes.filter(q => q.id !== id));
+
     try {
+      await deleteQuoteOffline(id, false); // local ID
       await fetch(`/api/quotes/${id}`, { method: 'DELETE' });
     } catch (error) {
       console.error('Silme işlemi başarısız', error);
@@ -100,25 +98,21 @@ export default function Home() {
 
   const deleteSelected = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`${selectedIds.length} adet notu silmek istediğinize emin misiniz?`)) return;
+    if (!confirm(`${selectedIds.length} adet sözü silmek istediğinize emin misiniz?`)) return;
 
     const prevQuotes = [...quotes];
-    setQuotes(quotes.filter(q => !selectedIds.includes(q.id)));
+    setQuotes(quotes.filter(q => q.id && !selectedIds.includes(q.id)));
 
     try {
-      const res = await fetch('/api/quotes', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selectedIds }),
-      });
-
-      if (!res.ok) throw new Error('Failed');
+      // Toplu silme - her birini offline service ile sil
+      for (const id of selectedIds) {
+        await deleteQuoteOffline(id, false);
+      }
 
       setIsSelectionMode(false);
       setSelectedIds([]);
     } catch (error) {
-      console.error('Çoklu silme hatası', error);
-      alert('Silme işleminde hata oluştu');
+      console.error('Toplu silme hatası:', error);
       setQuotes(prevQuotes);
     }
   };
@@ -148,6 +142,10 @@ export default function Home() {
         onClose={() => setSidebarOpen(false)}
         onCollapseChange={setSidebarCollapsed}
       />
+
+      {/* Offline Status Components */}
+      <OfflineBanner />
+      <SyncStatus />
 
       {/* Main Content */}
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -228,17 +226,23 @@ export default function Home() {
             </div>
           ) : (
             <div className="quotes-grid">
-              {displayedQuotes.map((quote) => (
-                <QuoteCard
-                  key={quote.id}
-                  {...quote}
-                  onToggleFavorite={toggleFavorite}
-                  onDelete={deleteQuote}
-                  selectionMode={isSelectionMode}
-                  isSelected={selectedIds.includes(quote.id)}
-                  onSelect={handleSelect}
-                />
-              ))}
+              {displayedQuotes
+                .filter(q => q.id !== undefined)
+                .map((quote) => (
+                  <QuoteCard
+                    key={quote.id!}
+                    id={quote.id!}
+                    content={quote.content}
+                    author={quote.author}
+                    category={quote.category}
+                    isFavorite={quote.isFavorite}
+                    onToggleFavorite={toggleFavorite}
+                    onDelete={deleteQuote}
+                    selectionMode={isSelectionMode}
+                    isSelected={selectedIds.includes(quote.id!)}
+                    onSelect={handleSelect}
+                  />
+                ))}
             </div>
           )}
         </div>

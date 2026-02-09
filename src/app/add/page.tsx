@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { addQuoteOffline } from '@/lib/offline-service'; // Offline service
 
 export default function AddQuote() {
     const router = useRouter();
@@ -13,7 +14,7 @@ export default function AddQuote() {
     const [category, setCategory] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Load last used author and category from localStorage
+    // Form memory - son kullanılan değerleri yükle
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const lastAuthor = localStorage.getItem('last_used_author');
@@ -31,24 +32,23 @@ export default function AddQuote() {
         setLoading(true);
 
         try {
-            const res = await fetch('/api/quotes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content, author, category }),
+            // Offline-first: IndexedDB'ye kaydet, sonra server'a sync et
+            await addQuoteOffline({
+                content: content.trim(),
+                author: author.trim(),
+                category: category.trim()
             });
 
-            if (res.ok) {
-                // Save last used values to localStorage
-                if (author.trim()) localStorage.setItem('last_used_author', author.trim());
-                if (category.trim()) localStorage.setItem('last_used_category', category.trim());
+            // Form memory - son kullanılanları sakla
+            if (author.trim()) localStorage.setItem('last_used_author', author.trim());
+            if (category.trim()) localStorage.setItem('last_used_category', category.trim());
 
-                router.push('/');
-                router.refresh();
-            } else {
-                alert('Kaydedilemedi!');
-            }
+            // Başarı - ana sayfaya dön
+            router.push('/');
+            router.refresh();
+
         } catch (error) {
-            console.error('Hata:', error);
+            console.error('Kayıt hatası:', error);
             alert('Bir hata oluştu');
         } finally {
             setLoading(false);
