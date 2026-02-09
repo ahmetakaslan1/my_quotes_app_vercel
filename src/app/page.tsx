@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
+import Sidebar from '@/components/Sidebar';
 import QuoteCard from '@/components/QuoteCard';
-import { Search, Filter, CheckSquare, Trash, X } from 'lucide-react';
+import { Search, Filter, CheckSquare, Trash, X, Menu } from 'lucide-react';
 
 interface Quote {
   id: number;
@@ -19,6 +20,8 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'favorites'>('all');
   const [sort, setSort] = useState<'newest' | 'oldest' | 'alphabetical'>('newest');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -26,8 +29,14 @@ export default function Home() {
   const fetchQuotes = async () => {
     setLoading(true);
     try {
-      const query = new URLSearchParams({ search, sort });
-      const res = await fetch(`/api/quotes?${query}`);
+      const params = new URLSearchParams({ search, sort });
+
+      // Add category filter if not 'all'
+      if (selectedCategory !== 'all' && selectedCategory !== 'favorites') {
+        params.append('category', selectedCategory);
+      }
+
+      const res = await fetch(`/api/quotes?${params}`);
       const data = await res.json();
       setQuotes(data);
     } catch (error) {
@@ -42,7 +51,7 @@ export default function Home() {
       fetchQuotes();
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, sort]);
+  }, [search, sort, selectedCategory]);
 
   const toggleFavorite = async (id: number, currentStatus: boolean) => {
     setQuotes(quotes.map(q => q.id === id ? { ...q, isFavorite: !currentStatus } : q));
@@ -107,105 +116,125 @@ export default function Home() {
     }
   };
 
-  const displayedQuotes = filter === 'favorites'
+  const displayedQuotes = selectedCategory === 'favorites'
     ? quotes.filter(q => q.isFavorite)
     : quotes;
 
   return (
-    <main>
+    <>
       <Navbar />
 
-      <div className="container">
-        <div className="page-header">
-          <div className="page-title-section">
-            <h1>Kütüphanem</h1>
-            <p>Kaydettiğin tüm ilham verici sözler ve notlar burada.</p>
+      {/* Hamburger Button (Mobile only) */}
+      <button
+        className="hamburger-btn"
+        onClick={() => setSidebarOpen(true)}
+        aria-label="Menüyü Aç"
+      >
+        <Menu size={24} />
+      </button>
+
+      {/* Sidebar */}
+      <Sidebar
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+
+      {/* Main Content */}
+      <main className="main-content">
+        <div className="container">
+          <div className="page-header">
+            <div className="page-title-section">
+              <h1>Kütüphanem</h1>
+              <p>Kaydettiğin tüm ilham verici sözler ve notlar burada.</p>
+            </div>
+
+            <div>
+              {!isSelectionMode ? (
+                <button onClick={toggleSelectionMode} className="btn btn-ghost">
+                  <CheckSquare size={18} /> Seç
+                </button>
+              ) : (
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                  <button onClick={toggleSelectionMode} className="btn btn-ghost">
+                    <X size={18} /> İptal
+                  </button>
+                  <button
+                    onClick={deleteSelected}
+                    disabled={selectedIds.length === 0}
+                    className="btn btn-danger"
+                  >
+                    <Trash size={18} /> Sil ({selectedIds.length})
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div>
-            {!isSelectionMode ? (
-              <button onClick={toggleSelectionMode} className="btn btn-ghost">
-                <CheckSquare size={18} /> Seç
-              </button>
-            ) : (
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button onClick={toggleSelectionMode} className="btn btn-ghost">
-                  <X size={18} /> İptal
-                </button>
-                <button
-                  onClick={deleteSelected}
-                  disabled={selectedIds.length === 0}
-                  className="btn btn-danger"
+          {!isSelectionMode && (
+            <div className="controls-panel">
+              <div className="search-box">
+                <Search className="search-icon" size={18} />
+                <input
+                  type="text"
+                  placeholder="Notlarda veya yazarlarda ara..."
+                  className="search-input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              <div className="controls-group">
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as any)}
+                  className="select"
                 >
-                  <Trash size={18} /> Sil ({selectedIds.length})
+                  <option value="newest">En Yeni</option>
+                  <option value="oldest">En Eski</option>
+                  <option value="alphabetical">A-Z Sıralı</option>
+                </select>
+
+                <button
+                  onClick={() => setFilter(filter === 'all' ? 'favorites' : 'all')}
+                  className={`btn ${filter === 'favorites' ? 'btn-primary' : 'btn-ghost'}`}
+                >
+                  <Filter size={18} />
+                  {filter === 'favorites' ? 'Tümü' : 'Favoriler'}
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">⏳</div>
+              <p>Veriler yükleniyor...</p>
+            </div>
+          ) : displayedQuotes.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">📝</div>
+              <h2>Henüz bir şey yok</h2>
+              <p>Kütüphanen boş görünüyor. Hemen ilk notunu ekle!</p>
+            </div>
+          ) : (
+            <div className="quotes-grid">
+              {displayedQuotes.map((quote) => (
+                <QuoteCard
+                  key={quote.id}
+                  {...quote}
+                  onToggleFavorite={toggleFavorite}
+                  onDelete={deleteQuote}
+                  selectionMode={isSelectionMode}
+                  isSelected={selectedIds.includes(quote.id)}
+                  onSelect={handleSelect}
+                />
+              ))}
+            </div>
+          )}
         </div>
-
-        {!isSelectionMode && (
-          <div className="controls-panel">
-            <div className="search-box">
-              <Search className="search-icon" size={18} />
-              <input
-                type="text"
-                placeholder="Notlarda veya yazarlarda ara..."
-                className="search-input"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-
-            <div className="controls-group">
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as any)}
-                className="select"
-              >
-                <option value="newest">En Yeni</option>
-                <option value="oldest">En Eski</option>
-                <option value="alphabetical">A-Z Sıralı</option>
-              </select>
-
-              <button
-                onClick={() => setFilter(filter === 'all' ? 'favorites' : 'all')}
-                className={`btn ${filter === 'favorites' ? 'btn-primary' : 'btn-ghost'}`}
-              >
-                <Filter size={18} />
-                {filter === 'favorites' ? 'Tümü' : 'Favoriler'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">⏳</div>
-            <p>Veriler yükleniyor...</p>
-          </div>
-        ) : displayedQuotes.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon">📝</div>
-            <h2>Henüz bir şey yok</h2>
-            <p>Kütüphanen boş görünüyor. Hemen ilk notunu ekle!</p>
-          </div>
-        ) : (
-          <div className="quotes-grid">
-            {displayedQuotes.map((quote) => (
-              <QuoteCard
-                key={quote.id}
-                {...quote}
-                onToggleFavorite={toggleFavorite}
-                onDelete={deleteQuote}
-                selectionMode={isSelectionMode}
-                isSelected={selectedIds.includes(quote.id)}
-                onSelect={handleSelect}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

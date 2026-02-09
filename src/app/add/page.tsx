@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import { Save, ArrowLeft } from 'lucide-react';
@@ -12,6 +12,17 @@ export default function AddQuote() {
     const [author, setAuthor] = useState('');
     const [category, setCategory] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Load last used author and category from localStorage
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const lastAuthor = localStorage.getItem('last_used_author');
+            const lastCategory = localStorage.getItem('last_used_category');
+
+            if (lastAuthor) setAuthor(lastAuthor);
+            if (lastCategory) setCategory(lastCategory);
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,6 +38,10 @@ export default function AddQuote() {
             });
 
             if (res.ok) {
+                // Save last used values to localStorage
+                if (author.trim()) localStorage.setItem('last_used_author', author.trim());
+                if (category.trim()) localStorage.setItem('last_used_category', category.trim());
+
                 router.push('/');
                 router.refresh();
             } else {
@@ -76,7 +91,7 @@ export default function AddQuote() {
                                     value={author}
                                     onChange={(e) => setAuthor(e.target.value)}
                                     className="input"
-                                    placeholder="Örn: Mevlana"
+                                    placeholder="Örn: Mevlana (son kullanılan hatırlanır)"
                                 />
                             </div>
 
@@ -87,7 +102,7 @@ export default function AddQuote() {
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
                                     className="input"
-                                    placeholder="Örn: Motivasyon"
+                                    placeholder="Örn: Motivasyon (son kullanılan hatırlanır)"
                                 />
                             </div>
                         </div>

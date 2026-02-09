@@ -521,3 +521,52 @@ p {
     display: none;
   }
 }
+
+/* ===== SIDEBAR LAYOUT ===== */
+.main-content {
+  margin-left: 280px;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 60px;
+}
+
+.hamburger-btn {
+  display: none;
+  position: fixed;
+  left: 1rem;
+  top: 15px;
+  z-index: 100;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: all 0.2s ease;
+}
+
+.hamburger-btn:hover {
+  background: var(--bg-input);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-hover);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+
+  .main-content.sidebar-collapsed {
+    margin-left: 0;
+  }
+
+  .hamburger-btn {
+    display: flex;
+  }
+}

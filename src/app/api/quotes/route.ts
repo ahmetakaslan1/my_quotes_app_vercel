@@ -3,11 +3,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/quotes
-// Query Params: search (string), sort ('newest' | 'oldest' | 'alphabetical')
+// Query Params: search (string), sort ('newest' | 'oldest' | 'alphabetical'), category (string)
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search") || "";
   const sort = searchParams.get("sort") || "newest";
+  const category = searchParams.get("category") || "";
 
   let orderBy = {};
   if (sort === "oldest") orderBy = { createdAt: "asc" };
@@ -17,9 +18,15 @@ export async function GET(request: Request) {
   try {
     const quotes = await prisma.quote.findMany({
       where: {
-        OR: [
-          { content: { contains: search } },
-          { author: { contains: search } },
+        AND: [
+          {
+            OR: [
+              { content: { contains: search } },
+              { author: { contains: search } },
+            ],
+          },
+          // Category filter
+          category ? { category: { equals: category } } : {},
         ],
       },
       orderBy,
