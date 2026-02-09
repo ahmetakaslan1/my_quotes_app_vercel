@@ -22,6 +22,13 @@ export default function Home() {
   const [sort, setSort] = useState<'newest' | 'oldest' | 'alphabetical'>('newest');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebar_collapsed');
+      return saved !== null ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
   const [loading, setLoading] = useState(true);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -139,10 +146,11 @@ export default function Home() {
         onCategoryChange={setSelectedCategory}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onCollapseChange={setSidebarCollapsed}
       />
 
       {/* Main Content */}
-      <main className="main-content">
+      <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <div className="container">
           <div className="page-header">
             <div className="page-title-section">

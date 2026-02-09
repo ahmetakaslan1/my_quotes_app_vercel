@@ -20,9 +20,10 @@ interface SidebarProps {
     onCategoryChange: (category: string) => void;
     isOpen: boolean;
     onClose: () => void;
+    onCollapseChange?: (isCollapsed: boolean) => void;
 }
 
-export default function Sidebar({ selectedCategory, onCategoryChange, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ selectedCategory, onCategoryChange, isOpen, onClose, onCollapseChange }: SidebarProps) {
     const [stats, setStats] = useState<SidebarStats>({ all: 0, favorites: 0, categories: [] });
     const [loading, setLoading] = useState(true);
 
@@ -56,12 +57,16 @@ export default function Sidebar({ selectedCategory, onCategoryChange, isOpen, on
         fetchStats();
     }, []);
 
-    // Save collapsed state to localStorage
+    // Save collapsed state to localStorage and notify parent
     useEffect(() => {
         if (typeof window !== 'undefined') {
             localStorage.setItem('sidebar_collapsed', JSON.stringify(isCollapsed));
         }
-    }, [isCollapsed]);
+        // Notify parent component about collapse state change
+        if (onCollapseChange) {
+            onCollapseChange(isCollapsed);
+        }
+    }, [isCollapsed, onCollapseChange]);
 
     // Save collapsible state to localStorage
     useEffect(() => {
