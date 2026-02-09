@@ -40,4 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# chrome extension - personal (with real URLs)
+chrome-extension/
+
 /src/generated/prisma

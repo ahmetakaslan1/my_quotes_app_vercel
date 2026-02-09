@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Quotes Library</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>📝 My Quotes</h1>
+                <button id="goToSiteBtn" class="btn-link" title="Siteyi Ziyaret Et">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="status-message hidden"></div>
+
+        <!-- Add Quote Form -->
+        <div class="form-section">
+            <h2>Yeni Söz Ekle</h2>
+            <form id="quoteForm">
+                <div class="form-group">
+                    <label for="content">Söz *</label>
+                    <textarea 
+                        id="content" 
+                        name="content" 
+                        rows="4" 
+                        placeholder="Sözü buraya yazın..."
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="author">Yazar</label>
+                    <input 
+                        type="text" 
+                        id="author" 
+                        name="author" 
+                        placeholder="Örn: Mark Twain"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Kategori</label>
+                    <input 
+                        type="text" 
+                        id="category" 
+                        name="category" 
+                        placeholder="Örn: Motivasyon"
+                    >
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submitBtn" class="btn btn-primary">
+                        <span class="btn-text">Kaydet</span>
+                        <span class="btn-loader hidden">⏳</span>
+                    </button>
+                    <button type="button" id="clearBtn" class="btn btn-secondary">
+                        Temizle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

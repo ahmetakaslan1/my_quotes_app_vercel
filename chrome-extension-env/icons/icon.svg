@@ -1,0 +1,19 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="128" height="128" rx="24" fill="url(#grad)"/>
+  
+  <!-- Quote Icon -->
+  <g transform="translate(24, 32)">
+    <!-- Left quote mark -->
+    <path d="M0,40 Q0,20 15,10 Q30,0 30,15 Q30,25 20,30 Q10,35 10,40 L0,40 Z" fill="white" opacity="0.9"/>
+    <!-- Right quote mark -->
+    <path d="M50,40 Q50,20 65,10 Q80,0 80,15 Q80,25 70,30 Q60,35 60,40 L50,40 Z" fill="white" opacity="0.9"/>
+  </g>
+</svg>
