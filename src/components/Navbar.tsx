@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Book, Plus, Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import NetworkStatus from './NetworkStatus';
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -38,6 +39,8 @@ export default function Navbar() {
                 </Link>
 
                 <div className="nav-actions">
+                    <NetworkStatus />
+
                     <Link href="/api-docs" className="btn btn-ghost" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}>
                         📄 API
                     </Link>

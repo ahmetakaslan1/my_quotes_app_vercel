@@ -1,17 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
 import QuoteCard from '@/components/QuoteCard';
-import OfflineBanner from '@/components/OfflineBanner'; // Offline banner
-import SyncStatus from '@/components/SyncStatus'; // Sync status
 import { Search, Filter, CheckSquare, Trash, X, Menu } from 'lucide-react';
 import {
   getAllQuotesOffline,
   toggleFavoriteOffline,
   deleteQuoteOffline
-} from '@/lib/offline-service'; // Offline service
+} from '@/lib/offline-service';
 import { LocalQuote } from '@/lib/db';
 
 export default function Home() {
@@ -53,6 +51,46 @@ export default function Home() {
     window.addEventListener('online', handleOnline);
     return () => window.removeEventListener('online', handleOnline);
   }, []);
+
+  // Client-side filtering - Tüm filtreler birlikte çalışır
+  const filteredQuotes = useMemo(() => {
+    let result = [...quotes];
+
+    // 1. Kategori filtresi
+    if (selectedCategory !== 'all' && selectedCategory !== 'favorites') {
+      result = result.filter(q => q.category === selectedCategory);
+    }
+
+    // 2. Favoriler filtresi
+    if (filter === 'favorites' || selectedCategory === 'favorites') {
+      result = result.filter(q => q.isFavorite);
+    }
+
+    // 3. Search filtresi
+    if (search.trim()) {
+      const searchLower = search.toLowerCase();
+      result = result.filter(q =>
+        q.content.toLowerCase().includes(searchLower) ||
+        q.author?.toLowerCase().includes(searchLower) ||
+        q.category?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // 4. Sort
+    if (sort === 'newest') {
+      result.sort((a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    } else if (sort === 'oldest') {
+      result.sort((a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+    } else if (sort === 'alphabetical') {
+      result.sort((a, b) => a.content.localeCompare(b.content));
+    }
+
+    return result;
+  }, [quotes, selectedCategory, filter, search, sort]);
 
   // Offline-first favorite toggle
   const toggleFavorite = async (id: number, currentStatus: boolean) => {
@@ -104,7 +142,6 @@ export default function Home() {
     setQuotes(quotes.filter(q => q.id && !selectedIds.includes(q.id)));
 
     try {
-      // Toplu silme - her birini offline service ile sil
       for (const id of selectedIds) {
         await deleteQuoteOffline(id, false);
       }
@@ -116,10 +153,6 @@ export default function Home() {
       setQuotes(prevQuotes);
     }
   };
-
-  const displayedQuotes = selectedCategory === 'favorites'
-    ? quotes.filter(q => q.isFavorite)
-    : quotes;
 
   return (
     <>
@@ -142,10 +175,6 @@ export default function Home() {
         onClose={() => setSidebarOpen(false)}
         onCollapseChange={setSidebarCollapsed}
       />
-
-      {/* Offline Status Components */}
-      <OfflineBanner />
-      <SyncStatus />
 
       {/* Main Content */}
       <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -218,7 +247,7 @@ export default function Home() {
               <div className="empty-state-icon">⏳</div>
               <p>Veriler yükleniyor...</p>
             </div>
-          ) : displayedQuotes.length === 0 ? (
+          ) : filteredQuotes.length === 0 ? (
             <div className="empty-state">
               <div className="empty-state-icon">📝</div>
               <h2>Henüz bir şey yok</h2>
@@ -226,9 +255,9 @@ export default function Home() {
             </div>
           ) : (
             <div className="quotes-grid">
-              {displayedQuotes
-                .filter(q => q.id !== undefined)
-                .map((quote) => (
+              {filteredQuotes
+                .filter((q: LocalQuote) => q.id !== undefined)
+                .map((quote: LocalQuote) => (
                   <QuoteCard
                     key={quote.id!}
                     id={quote.id!}
