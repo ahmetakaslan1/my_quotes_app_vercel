@@ -30,6 +30,13 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  // Admin durumu — localStorage'dan oku
+  const [isAdmin, setIsAdmin] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('admin_token');
+    }
+    return false;
+  });
 
   // Offline-first: IndexedDB + Network
   const fetchQuotes = async () => {
@@ -50,7 +57,17 @@ export default function Home() {
     // Online olunca refresh et (sync için)
     const handleOnline = () => fetchQuotes();
     window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
+
+    // Navbar login/logout'unu dinle
+    const handleStorage = () => {
+      setIsAdmin(!!localStorage.getItem('admin_token'));
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   // Client-side filtering - Tüm filtreler birlikte çalışır
@@ -190,23 +207,25 @@ export default function Home() {
             </div>
 
             <div>
-              {!isSelectionMode ? (
-                <button onClick={toggleSelectionMode} className="btn btn-ghost">
-                  <CheckSquare size={18} /> Seç
-                </button>
-              ) : (
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+              {isAdmin && (
+                !isSelectionMode ? (
                   <button onClick={toggleSelectionMode} className="btn btn-ghost">
-                    <X size={18} /> İptal
+                    <CheckSquare size={18} /> Seç
                   </button>
-                  <button
-                    onClick={deleteSelected}
-                    disabled={selectedIds.length === 0}
-                    className="btn btn-danger"
-                  >
-                    <Trash size={18} /> Sil ({selectedIds.length})
-                  </button>
-                </div>
+                ) : (
+                  <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button onClick={toggleSelectionMode} className="btn btn-ghost">
+                      <X size={18} /> İptal
+                    </button>
+                    <button
+                      onClick={deleteSelected}
+                      disabled={selectedIds.length === 0}
+                      className="btn btn-danger"
+                    >
+                      <Trash size={18} /> Sil ({selectedIds.length})
+                    </button>
+                  </div>
+                )
               )}
             </div>
           </div>
@@ -269,9 +288,10 @@ export default function Home() {
                     author={quote.author}
                     category={quote.category}
                     isFavorite={quote.isFavorite}
+                    isAdmin={isAdmin}
                     onToggleFavorite={toggleFavorite}
                     onDelete={deleteQuote}
-                    selectionMode={isSelectionMode}
+                    selectionMode={isAdmin && isSelectionMode}
                     isSelected={selectedIds.includes(quote.id!)}
                     onSelect={handleSelect}
                   />

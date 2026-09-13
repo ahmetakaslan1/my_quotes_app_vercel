@@ -17,6 +17,13 @@ export default function EditQuote() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
+    // Admin kontrolü — admin değilse ana sayfaya yönlendir
+    useEffect(() => {
+        if (!localStorage.getItem('admin_token')) {
+            router.replace('/');
+        }
+    }, [router]);
+
     useEffect(() => {
         const fetchQuote = async () => {
             try {
@@ -49,9 +56,13 @@ export default function EditQuote() {
         setSaving(true);
 
         try {
+            const token = localStorage.getItem('admin_token');
             const res = await fetch(`/api/quotes/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
                 body: JSON.stringify({ content, author, category }),
             });
 

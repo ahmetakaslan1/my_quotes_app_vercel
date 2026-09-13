@@ -9,6 +9,15 @@
 
 import { db, LocalQuote, getPendingQuotes } from "./db";
 
+// ─── Admin Token Helper ───────────────────────────────────────────
+function getAdminHeaders(): HeadersInit {
+  const token = localStorage.getItem("admin_token");
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
 // ───────────────────────────────────────────────────────────────
 // ➕ OFFLINE QUOTE EKLEME
 // ───────────────────────────────────────────────────────────────
@@ -83,7 +92,7 @@ async function syncQuote(localId: number): Promise<void> {
     // ──────────────────────────────────────────────────────────
     const response = await fetch("/api/quotes", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: getAdminHeaders(),
       body: JSON.stringify({
         content: quote.content,
         author: quote.author,
@@ -229,6 +238,7 @@ export async function deleteQuoteOffline(
     try {
       await fetch(`/api/quotes/${quote.serverId}`, {
         method: "DELETE",
+        headers: getAdminHeaders(),
       });
       console.log("✅ Server dan silindi");
     } catch (error) {
@@ -275,7 +285,7 @@ export async function toggleFavoriteOffline(
     try {
       await fetch(`/api/quotes/${quote.serverId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAdminHeaders(),
         body: JSON.stringify({ isFavorite: newFavoriteStatus }),
       });
     } catch (error) {

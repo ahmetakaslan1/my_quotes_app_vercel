@@ -10,6 +10,7 @@ interface QuoteProps {
     author: string | null;
     category: string | null;
     isFavorite: boolean;
+    isAdmin: boolean;
     onToggleFavorite: (id: number, currentStatus: boolean) => void;
     onDelete: (id: number) => void;
     selectionMode: boolean;
@@ -18,7 +19,7 @@ interface QuoteProps {
 }
 
 export default function QuoteCard({
-    id, content, author, category, isFavorite,
+    id, content, author, category, isFavorite, isAdmin,
     onToggleFavorite, onDelete,
     selectionMode, isSelected, onSelect
 }: QuoteProps) {
@@ -65,20 +66,27 @@ export default function QuoteCard({
 
                 {!selectionMode && (
                     <div className="card-actions">
-                        <button onClick={handleEdit} className="btn-icon" title="Düzenle">
-                            <Edit size={16} />
-                        </button>
+                        {/* Kopyala — herkese açık */}
                         <button onClick={handleCopy} className="btn-icon" title="Kopyala">
                             <Copy size={16} className={copied ? 'text-green-500' : ''} />
                         </button>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onDelete(id); }}
-                            className="btn-icon"
-                            title="Sil"
-                            style={{ color: copied ? '' : '#dc2626' }}
-                        >
-                            <Trash2 size={16} />
-                        </button>
+
+                        {/* Düzenle ve Sil — sadece admin */}
+                        {isAdmin && (
+                            <>
+                                <button onClick={handleEdit} className="btn-icon" title="Düzenle">
+                                    <Edit size={16} />
+                                </button>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onDelete(id); }}
+                                    className="btn-icon"
+                                    title="Sil"
+                                    style={{ color: '#dc2626' }}
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
@@ -93,14 +101,17 @@ export default function QuoteCard({
                     {category && <span className="card-category">#{category}</span>}
                 </div>
 
-                <button
-                    onClick={(e) => { e.stopPropagation(); onToggleFavorite(id, isFavorite); }}
-                    className="btn-icon"
-                    title={isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
-                    style={{ color: isFavorite ? '#ec4899' : undefined }}
-                >
-                    <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
-                </button>
+                {/* Favori — sadece admin */}
+                {isAdmin && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onToggleFavorite(id, isFavorite); }}
+                        className="btn-icon"
+                        title={isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}
+                        style={{ color: isFavorite ? '#ec4899' : undefined }}
+                    >
+                        <Heart size={20} fill={isFavorite ? 'currentColor' : 'none'} />
+                    </button>
+                )}
             </div>
         </div>
     );

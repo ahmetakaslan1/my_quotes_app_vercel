@@ -1,6 +1,13 @@
-import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+
+// ─── Admin Auth Helper ───────────────────────────────────────────
+function isAuthorized(request: Request): boolean {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return false;
+  const token = authHeader.slice(7); // "Bearer " prefix'ini at
+  return token === process.env.ADMIN_PASSWORD;
+}
 
 // GET /api/quotes
 // Query Params: search (string), sort ('newest' | 'oldest' | 'alphabetical'), category (string)
@@ -42,6 +49,11 @@ export async function GET(request: Request) {
 
 // POST /api/quotes
 export async function POST(request: Request) {
+  // 🔒 Admin kontrolü
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { content, author, category } = body;
@@ -73,6 +85,11 @@ export async function POST(request: Request) {
 // DELETE /api/quotes
 // Body: { ids: number[] }
 export async function DELETE(request: Request) {
+  // 🔒 Admin kontrolü
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { ids } = body;

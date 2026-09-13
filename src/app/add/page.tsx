@@ -14,6 +14,13 @@ export default function AddQuote() {
     const [category, setCategory] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Admin kontrolü — admin değilse ana sayfaya yönlendir
+    useEffect(() => {
+        if (!localStorage.getItem('admin_token')) {
+            router.replace('/');
+        }
+    }, [router]);
+
     // Form memory - son kullanılan değerleri yükle
     useEffect(() => {
         if (typeof window !== 'undefined') {

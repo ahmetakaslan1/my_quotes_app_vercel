@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Book, Plus, Sun, Moon } from 'lucide-react';
+import { Book, Plus, Sun, Moon, Lock, LockOpen, LogOut } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function Navbar() {
     const pathname = usePathname();
     const [theme, setTheme] = useState('dark');
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
+        // Tema yükle
         const storedTheme = localStorage.getItem('theme');
         if (storedTheme) {
             setTheme(storedTheme);
@@ -18,6 +20,9 @@ export default function Navbar() {
             setTheme('dark');
             document.body.setAttribute('data-theme', 'dark');
         }
+
+        // Admin durumunu yükle
+        setIsAdmin(!!localStorage.getItem('admin_token'));
     }, []);
 
     const toggleTheme = () => {
@@ -25,6 +30,25 @@ export default function Navbar() {
         setTheme(newTheme);
         localStorage.setItem('theme', newTheme);
         document.body.setAttribute('data-theme', newTheme);
+    };
+
+    const handleAdminLogin = () => {
+        const password = prompt('Admin şifresi:');
+        if (!password) return;
+
+        localStorage.setItem('admin_token', password);
+        setIsAdmin(true);
+
+        // Diğer bileşenlerin (page.tsx vb.) haberi olsun
+        window.dispatchEvent(new Event('storage'));
+    };
+
+    const handleAdminLogout = () => {
+        localStorage.removeItem('admin_token');
+        setIsAdmin(false);
+
+        // Diğer bileşenlerin haberi olsun
+        window.dispatchEvent(new Event('storage'));
     };
 
     return (
@@ -50,15 +74,39 @@ export default function Navbar() {
                         {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                     </button>
 
-                    {pathname === '/add' ? (
-                        <Link href="/" className="btn btn-ghost">
-                            İptal
-                        </Link>
+                    {/* Admin Login / Logout */}
+                    {isAdmin ? (
+                        <button
+                            onClick={handleAdminLogout}
+                            className="btn-icon"
+                            title="Admin Çıkışı"
+                            style={{ color: '#22c55e' }}
+                        >
+                            <LogOut size={18} />
+                        </button>
                     ) : (
-                        <Link href="/add" className="btn btn-primary">
-                            <Plus size={18} />
-                            <span>Yeni Ekle</span>
-                        </Link>
+                        <button
+                            onClick={handleAdminLogin}
+                            className="btn-icon"
+                            title="Admin Girişi"
+                            style={{ opacity: 0.35 }}
+                        >
+                            <Lock size={16} />
+                        </button>
+                    )}
+
+                    {/* Yeni Ekle — sadece admin görebilir */}
+                    {isAdmin && (
+                        pathname === '/add' ? (
+                            <Link href="/" className="btn btn-ghost">
+                                İptal
+                            </Link>
+                        ) : (
+                            <Link href="/add" className="btn btn-primary">
+                                <Plus size={18} />
+                                <span>Yeni Ekle</span>
+                            </Link>
+                        )
                     )}
                 </div>
             </div>
